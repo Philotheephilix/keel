@@ -1,0 +1,20 @@
+{
+  "name": "@keel/sui-bindings",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./generated/index.ts",
+  "types": "./generated/index.ts",
+  "scripts": {
+    "codegen": "sui-ts-codegen generate",
+    "typecheck": "tsc --noEmit"
+  },
+  "comment": "Generated TypeScript bindings for the DeepBook Predict package via @mysten/codegen. Run `pnpm sui:codegen` after configuring sui-codegen.config.ts in Phase 0. Output under ./generated is gitignored.",
+  "dependencies": {
+    "@mysten/sui": "^1.30.0"
+  },
+  "devDependencies": {
+    "@mysten/codegen": "^0.2.0",
+    "typescript": "^5.6.0"
+  }
+}
