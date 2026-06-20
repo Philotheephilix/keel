@@ -1,0 +1,36 @@
+{
+  "name": "@keel/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./loadenv": "./src/loadenv.ts",
+    "./retry": "./src/retry.ts",
+    "./db": "./src/db/index.ts",
+    "./sui": "./src/sui/index.ts",
+    "./indexer": "./src/indexer/index.ts",
+    "./indemnity": "./src/indemnity/index.ts",
+    "./types": "./src/types/index.ts"
+  },
+  "scripts": {
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@mysten/sui": "^1.30.0",
+    "@prisma/client": "^5.22.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^20.16.0",
+    "prisma": "^5.22.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}
