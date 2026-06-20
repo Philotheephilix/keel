@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCurrentAccount } from "@/lib/wallet";
 import { api } from "@/lib/fetcher";
 import type {
@@ -13,6 +13,7 @@ import type {
   VaultResp,
   LpPositionResp,
   LpHistoryResp,
+  FaucetResp,
 } from "./types";
 
 export function useAddress() {
@@ -99,5 +100,17 @@ export function useLpHistory() {
     queryKey: ["lp-history", address],
     enabled: !!address,
     queryFn: () => api.post<LpHistoryResp>("/lp/history", { userAddress: address }),
+  });
+}
+
+export function useFaucet() {
+  const address = useAddress();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.post<FaucetResp>("/faucet", { userAddress: address }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["holdings", address] });
+      qc.invalidateQueries({ queryKey: ["lp-position", address] });
+    },
   });
 }

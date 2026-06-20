@@ -6,3 +6,4 @@ export * from "./policy.js";
 export * from "./lp.js";
 export * from "./stats.js";
 export * from "./keeper.js";
+export * from "./faucet.js";

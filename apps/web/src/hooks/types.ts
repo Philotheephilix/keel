@@ -155,3 +155,5 @@ export type LpSupplyResp = { unsignedTxBytes: string; amount: number };
 export type LpWithdrawResp =
   | { unsignedTxBytes: string; plpAmount: number; blocked?: false }
   | { blocked: true; maxWithdrawableNow: number };
+
+export type FaucetResp = { txDigest: string; dusdc: number; sui: number };

@@ -3,13 +3,33 @@
 import Link from "next/link";
 import { ConnectButton } from "@/lib/wallet";
 import { KeelApiError } from "@/lib/fetcher";
-import { useAddress, useManager, useHoldings, usePolicies, useStats } from "@/hooks/useKeel";
+import { useAddress, useManager, useHoldings, usePolicies, useStats, useFaucet } from "@/hooks/useKeel";
 import { CreateAccount } from "@/components/CreateAccount";
 import { Card, Stat, Button, Spinner, ErrorBox, Empty, StatusBadge, ConnectPrompt } from "@/components/ui";
 import { fmtUsd, countdownToTs } from "@/components/format";
 
 function errMsg(e: unknown) {
   return e instanceof KeelApiError ? e.message : (e as Error)?.message ?? "Something went wrong";
+}
+
+/** Testnet faucet: claim 5 dUSDC (+ gas if low) once per address. */
+function FaucetButton() {
+  const faucet = useFaucet();
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      {faucet.isSuccess && (
+        <span style={{ color: "var(--accent)", fontSize: 12 }}>
+          +{faucet.data.dusdc} dUSDC{faucet.data.sui ? ` + ${faucet.data.sui} SUI` : ""} ✓
+        </span>
+      )}
+      {faucet.isError && (
+        <span style={{ color: "#f87171", fontSize: 12 }}>{errMsg(faucet.error)}</span>
+      )}
+      <Button variant="secondary" onClick={() => faucet.mutate()} disabled={faucet.isPending}>
+        {faucet.isPending ? "Sending…" : "Get 5 test dUSDC"}
+      </Button>
+    </div>
+  );
 }
 
 export default function DashboardPage() {
@@ -68,7 +88,7 @@ export default function DashboardPage() {
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
         {/* Holdings */}
-        <Card title="Your holdings">
+        <Card title="Your holdings" actions={<FaucetButton />}>
           {holdings.isLoading ? (
             <Spinner />
           ) : holdings.isError ? (

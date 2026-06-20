@@ -108,3 +108,12 @@ model KeelKeeperJob {
   @@unique([oracleId, expiryTimestamp])
   @@index([status])
 }
+
+model KeelFaucetClaim {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userAddress String   @unique // one claim per address
+  txDigest    String
+  dusdc       Float
+  sui         Float
+  createdAt   DateTime @default(now())
+}
