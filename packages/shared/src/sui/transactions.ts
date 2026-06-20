@@ -12,7 +12,9 @@ import type { Leg } from "../types/index.js";
 // Explicit gas budgets (MIST) so the SDK doesn't over-reserve. Without these, building
 // against a thin wallet picks one small coin and inflates the budget, failing with
 // "balance of gas object ... lower than the needed amount". Unused gas is refunded.
-const GAS = { createManager: 30_000_000n, mint: 150_000_000n, lp: 60_000_000n };
+// mint is a multi-command PTB (deposit + coin ops + one market_key+mint per ladder rung),
+// so it needs a generous budget; unused gas is refunded.
+const GAS = { createManager: 30_000_000n, mint: 800_000_000n, lp: 120_000_000n };
 
 /** create_manager() — shares a new PredictManager, returns its ID via object changes. */
 export function buildCreateManagerTx(sender: string): Transaction {
