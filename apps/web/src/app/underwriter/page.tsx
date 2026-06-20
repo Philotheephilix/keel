@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ConnectButton, useSignAndExecuteTransaction } from "@/lib/testwallet";
+import { ConnectButton, useSignAndExecuteTransaction } from "@/lib/wallet";
 import { useQueryClient } from "@tanstack/react-query";
 import { api, KeelApiError } from "@/lib/fetcher";
 import { useAddress, useVault, useLpPosition } from "@/hooks/useKeel";

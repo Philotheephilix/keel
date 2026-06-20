@@ -11,6 +11,15 @@ const nextConfig: NextConfig = {
       ".js": [".ts", ".tsx", ".js"],
       ".mjs": [".mts", ".mjs"],
     };
+    // Privy references optional connectors (Farcaster, Stripe onramp) we don't use; stub
+    // them so webpack doesn't warn about unresolved modules.
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "@farcaster/mini-app-solana": false,
+      "@farcaster/frame-sdk": false,
+      "@stripe/crypto": false,
+      "@stripe/stripe-js": false,
+    };
     return config;
   },
 };

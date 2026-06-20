@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ConnectButton } from "@/lib/testwallet";
+import { ConnectButton } from "@/lib/wallet";
 import { KeelApiError } from "@/lib/fetcher";
 import { useAddress, usePolicies, useLpPosition, useLpHistory } from "@/hooks/useKeel";
 import { Card, Stat, Spinner, ErrorBox, Empty, StatusBadge, ConnectPrompt } from "@/components/ui";

@@ -1,6 +1,6 @@
 "use client";
 
-import { ConnectButton } from "@/lib/testwallet";
+import { ConnectButton } from "@/lib/wallet";
 import { useAddress } from "@/hooks/useKeel";
 import { Card, ConnectPrompt, Stat } from "@/components/ui";
 import { shortAddr } from "@/components/format";

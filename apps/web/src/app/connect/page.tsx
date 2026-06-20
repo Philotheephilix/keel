@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { ConnectButton } from "@/lib/testwallet";
+import { ConnectButton } from "@/lib/wallet";
 import { useAddress } from "@/hooks/useKeel";
 import { Card } from "@/components/ui";
 

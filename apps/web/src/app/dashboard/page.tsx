@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ConnectButton } from "@/lib/testwallet";
+import { ConnectButton } from "@/lib/wallet";
 import { KeelApiError } from "@/lib/fetcher";
 import { useAddress, useManager, useHoldings, usePolicies, useStats } from "@/hooks/useKeel";
 import { CreateAccount } from "@/components/CreateAccount";

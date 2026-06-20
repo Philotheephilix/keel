@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ConnectButton } from "@/lib/testwallet";
+import { ConnectButton } from "@/lib/wallet";
 import { usePathname } from "next/navigation";
 
 const links = [

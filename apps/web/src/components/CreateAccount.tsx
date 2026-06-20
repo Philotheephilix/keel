@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSignAndExecuteTransaction } from "@/lib/testwallet";
+import { useSignAndExecuteTransaction } from "@/lib/wallet";
 import { useQueryClient } from "@tanstack/react-query";
 import { api, KeelApiError } from "@/lib/fetcher";
 import type { ManagerResp } from "@/hooks/types";

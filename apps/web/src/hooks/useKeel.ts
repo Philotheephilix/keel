@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useCurrentAccount } from "@/lib/testwallet";
+import { useCurrentAccount } from "@/lib/wallet";
 import { api } from "@/lib/fetcher";
 import type {
   ManagerResp,
