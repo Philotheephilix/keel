@@ -87,7 +87,7 @@ export type BuildMintResp = {
 
 export type ConfirmMintResp = { policyId: string; status: string };
 
-export type PolicyLeg = { strike: string; quantity: string; onChainQuantity: string };
+export type PolicyLeg = { strike: number; quantity: string; onChainQuantity: string };
 
 export type PolicyDto = {
   policyId: string;

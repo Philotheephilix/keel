@@ -5,7 +5,7 @@ import Link from "next/link";
 import { KeelApiError } from "@/lib/fetcher";
 import { usePolicy } from "@/hooks/useKeel";
 import { Card, Stat, Spinner, ErrorBox, StatusBadge, Button } from "@/components/ui";
-import { fmtUsd, countdown, fmtDate, priceFrom9Dec, SUISCAN_TX } from "@/components/format";
+import { fmtUsd, countdown, fmtDate, SUISCAN_TX } from "@/components/format";
 
 function errMsg(e: unknown) {
   return e instanceof KeelApiError ? e.message : (e as Error)?.message ?? "Something went wrong";
@@ -81,9 +81,9 @@ export default function PolicyPage({ params }: { params: Promise<{ policyId: str
             <tbody>
               {p.legs.map((l, i) => (
                 <tr key={i} style={{ borderTop: "1px solid var(--border)" }}>
-                  <td style={{ padding: "8px 0" }}>{fmtUsd(priceFrom9Dec(l.strike))}</td>
-                  <td style={{ padding: "8px 0", textAlign: "right" }}>{l.quantity}</td>
-                  <td style={{ padding: "8px 0", textAlign: "right" }}>{l.onChainQuantity}</td>
+                  <td style={{ padding: "8px 0" }}>{fmtUsd(l.strike)}</td>
+                  <td style={{ padding: "8px 0", textAlign: "right" }}>{(Number(l.quantity) / 1e6).toFixed(2)} dUSDC</td>
+                  <td style={{ padding: "8px 0", textAlign: "right" }}>{(Number(l.onChainQuantity) / 1e6).toFixed(2)} dUSDC</td>
                 </tr>
               ))}
             </tbody>
