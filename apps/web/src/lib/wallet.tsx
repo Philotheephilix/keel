@@ -88,10 +88,16 @@ export function useSignAndExecuteTransaction() {
       const rawSig = signature.startsWith("0x")
         ? Uint8Array.from(Buffer.from(signature.slice(2), "hex"))
         : fromB64(signature);
+      const pubKey = new Ed25519PublicKey(parsePublicKey(w.publicKey));
+      // Guard: a key that doesn't derive the wallet address would yield an opaque
+      // "signature rejected" from the fullnode — surface a clear config error instead.
+      if (pubKey.toSuiAddress() !== w.address) {
+        throw new Error("wallet public key does not match its address — Privy wallet misconfigured");
+      }
       const serialized = toSerializedSignature({
         signature: rawSig,
         signatureScheme: "ED25519",
-        publicKey: new Ed25519PublicKey(parsePublicKey(w.publicKey)),
+        publicKey: pubKey,
       });
 
       const res = await client().executeTransactionBlock({
@@ -143,7 +149,8 @@ export function ConnectButton() {
   // Ensure a Sui embedded wallet exists once authenticated. Guarded against re-firing,
   // and creation errors are surfaced instead of swallowed.
   useEffect(() => {
-    if (authenticated && !w && !creating.current) {
+    // create once; don't retry on every render after a failure (would hammer Privy).
+    if (authenticated && !w && !creating.current && !createError) {
       creating.current = true;
       createWallet({ chainType: "sui" })
         .catch((e) => setCreateError(e instanceof Error ? e.message : "could not create wallet"))
@@ -151,7 +158,7 @@ export function ConnectButton() {
           creating.current = false;
         });
     }
-  }, [authenticated, w, createWallet]);
+  }, [authenticated, w, createWallet, createError]);
 
   async function copy() {
     if (!w) return;
