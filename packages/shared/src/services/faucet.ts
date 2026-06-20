@@ -28,6 +28,8 @@ export async function claimFaucet(userAddress: string): Promise<FaucetResult> {
     throw new KeelError("ALREADY_CLAIMED", "This address already claimed test dUSDC. One claim per address.");
   }
 
+  let sendSui = false;
+  let res;
   try {
     const funding = keeperAddress();
     const { data } = await suiClient().getCoins({ owner: funding, coinType: config.quoteAssetType });
@@ -35,7 +37,7 @@ export async function claimFaucet(userAddress: string): Promise<FaucetResult> {
     if (total < DUSDC_AMOUNT) throw new KeelError("FAUCET_EMPTY", "Faucet is out of dUSDC.");
 
     const recipientSui = BigInt((await suiClient().getBalance({ owner: userAddress })).totalBalance);
-    const sendSui = recipientSui < SUI_GAS_THRESHOLD;
+    sendSui = recipientSui < SUI_GAS_THRESHOLD;
 
     const tx = new Transaction();
     tx.setSender(funding);
@@ -53,16 +55,17 @@ export async function claimFaucet(userAddress: string): Promise<FaucetResult> {
       tx.transferObjects([suiOut], userAddress);
     }
 
-    const res = await signAndExecute(tx, keeperKeypair());
-    // confirm the reservation with the real digest + actual SUI sent
-    await prisma.keelFaucetClaim.update({
-      where: { userAddress },
-      data: { txDigest: res.digest, sui: sendSui ? 0.05 : 0 },
-    });
-    return { txDigest: res.digest, dusdc: 5, sui: sendSui ? 0.05 : 0 };
+    res = await signAndExecute(tx, keeperKeypair());
   } catch (e) {
-    // the transfer never landed — release the reservation so the user can retry
+    // failure before the transfer landed — release the reservation so the user can retry.
     await prisma.keelFaucetClaim.delete({ where: { userAddress } }).catch(() => {});
     throw e;
   }
+
+  // Funds have landed. NEVER roll back from here — recording the digest is best-effort,
+  // so a DB hiccup can't reopen the claim and cause a double-spend (fail-closed).
+  await prisma.keelFaucetClaim
+    .update({ where: { userAddress }, data: { txDigest: res.digest, sui: sendSui ? 0.05 : 0 } })
+    .catch(() => {});
+  return { txDigest: res.digest, dusdc: 5, sui: sendSui ? 0.05 : 0 };
 }
