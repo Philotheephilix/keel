@@ -13,7 +13,7 @@
  *
  * NOTE: a fresh Privy wallet has 0 SUI + 0 dUSDC — fund the address before transacting.
  */
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { SuiClient, SuiHTTPTransport } from "@mysten/sui/client";
 import { Transaction } from "@mysten/sui/transactions";
 import { messageWithIntent, toSerializedSignature } from "@mysten/sui/cryptography";
@@ -38,9 +38,9 @@ type SuiWallet = { address: string; publicKey: string };
 function useSuiWallet(): SuiWallet | null {
   const { user } = usePrivy();
   const accts = (user?.linkedAccounts ?? []) as unknown as Array<Record<string, unknown>>;
-  const acct = accts.find(
-    (a) => a["type"] === "wallet" && (a["chainType"] === "sui" || a["walletClientType"] === "privy"),
-  );
+  // Strict: only a Sui wallet. Matching `walletClientType === 'privy'` would also pick up
+  // an EVM/Solana embedded wallet, whose address/key are not Sui and would break signing.
+  const acct = accts.find((a) => a["type"] === "wallet" && a["chainType"] === "sui");
   if (!acct || !acct["address"]) return null;
   const publicKey = (acct["publicKey"] ?? acct["public_key"] ?? "") as string;
   return { address: acct["address"] as string, publicKey };
@@ -51,14 +51,19 @@ export function useCurrentAccount(): { address: string } | null {
   return w ? { address: w.address } : null;
 }
 
-/** Decode Privy's public key (hex `0x..` or base64) to 32 raw bytes. */
+/** Decode Privy's public key (hex `0x..` or base64) to the 32-byte ED25519 key. */
 function parsePublicKey(pk: string): Uint8Array {
   if (!pk) throw new Error("Privy wallet has no public key");
   const clean = pk.startsWith("0x") ? pk.slice(2) : pk;
-  if (/^[0-9a-fA-F]+$/.test(clean) && clean.length === 64) {
-    return Uint8Array.from(Buffer.from(clean, "hex"));
+  // hex: decode the cleaned (un-prefixed) string, then trim an optional leading scheme flag.
+  if (/^[0-9a-fA-F]+$/.test(clean) && clean.length % 2 === 0) {
+    const bytes = Uint8Array.from(Buffer.from(clean, "hex"));
+    if (bytes.length === 32) return bytes;
+    if (bytes.length === 33) return bytes.slice(1); // strip ED25519 flag byte
   }
-  return fromB64(pk);
+  // base64 (decode the original string, not the 0x-stripped one)
+  const b = fromB64(pk);
+  return b.length === 33 ? b.slice(1) : b;
 }
 
 export function useSignAndExecuteTransaction() {
@@ -106,40 +111,86 @@ export function useSignAndExecuteTransaction() {
   return { mutateAsync, mutate: mutateAsync };
 }
 
+const pill: CSSProperties = {
+  background: "var(--accent)",
+  color: "#06210f",
+  padding: "8px 14px",
+  borderRadius: 8,
+  fontWeight: 600,
+  fontSize: 13,
+  border: "none",
+  cursor: "pointer",
+  fontFamily: "ui-monospace, monospace",
+};
+const ghost: CSSProperties = {
+  background: "transparent",
+  color: "var(--text)",
+  padding: "8px 10px",
+  borderRadius: 8,
+  fontSize: 13,
+  border: "1px solid var(--border)",
+  cursor: "pointer",
+};
+
 export function ConnectButton() {
   const { ready, authenticated, login, logout } = usePrivy();
   const { createWallet } = useCreateWallet();
   const w = useSuiWallet();
+  const creating = useRef(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
-  // Ensure a Sui embedded wallet exists once the user is authenticated.
+  // Ensure a Sui embedded wallet exists once authenticated. Guarded against re-firing,
+  // and creation errors are surfaced instead of swallowed.
   useEffect(() => {
-    if (authenticated && !w) {
-      createWallet({ chainType: "sui" }).catch(() => {});
+    if (authenticated && !w && !creating.current) {
+      creating.current = true;
+      createWallet({ chainType: "sui" })
+        .catch((e) => setCreateError(e instanceof Error ? e.message : "could not create wallet"))
+        .finally(() => {
+          creating.current = false;
+        });
     }
   }, [authenticated, w, createWallet]);
 
-  const btn = (label: string, onClick: () => void) => (
-    <button
-      onClick={onClick}
-      data-testid="privy-wallet"
-      style={{
-        background: "var(--accent)",
-        color: "#06210f",
-        padding: "8px 14px",
-        borderRadius: 8,
-        fontWeight: 600,
-        fontSize: 13,
-        border: "none",
-        cursor: "pointer",
-        fontFamily: "ui-monospace, monospace",
-      }}
-    >
-      {label}
-    </button>
-  );
+  async function copy() {
+    if (!w) return;
+    try {
+      await navigator.clipboard.writeText(w.address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
 
-  if (!ready) return btn("…", () => {});
-  if (!authenticated) return btn("Connect wallet", () => login());
-  const label = w ? `${w.address.slice(0, 6)}…${w.address.slice(-4)}` : "Creating wallet…";
-  return btn(label, () => logout());
+  if (!ready) return <button style={pill}>…</button>;
+  if (!authenticated)
+    return (
+      <button data-testid="privy-wallet" style={pill} onClick={() => login()}>
+        Connect wallet
+      </button>
+    );
+
+  if (!w) {
+    return (
+      <button data-testid="privy-wallet" style={pill} onClick={() => logout()} title={createError ?? ""}>
+        {createError ? "Wallet error — disconnect" : "Creating wallet…"}
+      </button>
+    );
+  }
+
+  return (
+    <div data-testid="privy-wallet" style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <button style={pill} onClick={copy} title={w.address}>
+        {copied ? "Copied ✓" : `${w.address.slice(0, 6)}…${w.address.slice(-4)}`}
+      </button>
+      <button style={ghost} onClick={copy} title="Copy address" aria-label="Copy address">
+        ⧉
+      </button>
+      <button style={ghost} onClick={() => logout()} title="Disconnect" aria-label="Disconnect">
+        ⏻
+      </button>
+    </div>
+  );
 }
