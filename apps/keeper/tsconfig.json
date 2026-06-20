@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["node"],
+    "paths": {
+      "@keel/shared": ["../../packages/shared/src"],
+      "@keel/shared/*": ["../../packages/shared/src/*"],
+      "@keel/sui-bindings": ["../../packages/sui-bindings/generated"]
+    }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
+}
