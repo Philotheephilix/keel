@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ConnectButton, useSignAndExecuteTransaction } from "@/lib/wallet";
 import { useQuery } from "@tanstack/react-query";
@@ -60,7 +59,7 @@ export default function BuyCoverPage() {
       <h1 style={{ fontSize: 28, margin: 0 }}>Buy cover</h1>
       <Steps step={step} />
 
-      {manager.data?.needsCreation && manager.data.creationTxBytes && (
+      {step !== 3 && manager.data?.needsCreation && manager.data.creationTxBytes && (
         <Card title="Create your Keel account first">
           <CreateAccount address={address} creationTxBytes={manager.data.creationTxBytes} />
         </Card>
@@ -454,6 +453,7 @@ function Review({
   onDone: (policyId: string) => void;
 }) {
   const { mutateAsync: signAndExecute } = useSignAndExecuteTransaction();
+  const manager = useManager();
   const [busy, setBusy] = useState(false);
   const [step, setStep] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -559,14 +559,11 @@ function Review({
         </div>
       )}
 
-      {!managerId && (
+      {!managerId && manager.data?.needsCreation && manager.data.creationTxBytes && (
         <div style={{ marginBottom: 16 }}>
-          <ErrorBox message="You need a Keel account. Go to the Dashboard to create one, then return." />
-          <div style={{ marginTop: 8 }}>
-            <Link href="/dashboard" style={{ color: "var(--accent)", fontSize: 13 }}>
-              Create account on Dashboard →
-            </Link>
-          </div>
+          <Card title="One-time: create your Keel account">
+            <CreateAccount address={address} creationTxBytes={manager.data.creationTxBytes} />
+          </Card>
         </div>
       )}
 

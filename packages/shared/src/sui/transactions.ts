@@ -9,10 +9,16 @@ import { suiClient } from "./client.js";
 import { config, target } from "../config.js";
 import type { Leg } from "../types/index.js";
 
+// Explicit gas budgets (MIST) so the SDK doesn't over-reserve. Without these, building
+// against a thin wallet picks one small coin and inflates the budget, failing with
+// "balance of gas object ... lower than the needed amount". Unused gas is refunded.
+const GAS = { createManager: 30_000_000n, mint: 150_000_000n, lp: 60_000_000n };
+
 /** create_manager() — shares a new PredictManager, returns its ID via object changes. */
 export function buildCreateManagerTx(sender: string): Transaction {
   const tx = new Transaction();
   tx.setSender(sender);
+  tx.setGasBudget(GAS.createManager);
   tx.moveCall({ target: target("predict", "create_manager"), arguments: [] });
   return tx;
 }
@@ -58,6 +64,7 @@ export async function buildMintPolicyTx(params: {
 }): Promise<Transaction> {
   const tx = new Transaction();
   tx.setSender(params.sender);
+  tx.setGasBudget(GAS.mint);
 
   const coin = await quoteCoinForAmount(tx, params.sender, params.depositAmount);
   tx.moveCall({
@@ -98,6 +105,7 @@ export async function buildSupplyTx(params: {
 }): Promise<Transaction> {
   const tx = new Transaction();
   tx.setSender(params.sender);
+  tx.setGasBudget(GAS.lp);
   const coin = await quoteCoinForAmount(tx, params.sender, params.amount);
   const plp = tx.moveCall({
     target: target("predict", "supply"),
@@ -115,6 +123,7 @@ export async function buildWithdrawTx(params: {
 }): Promise<Transaction> {
   const tx = new Transaction();
   tx.setSender(params.sender);
+  tx.setGasBudget(GAS.lp);
   const { data } = await suiClient().getCoins({ owner: params.sender, coinType: config.plpCoinType });
   if (data.length === 0) throw new Error("no PLP coins in wallet");
   const sorted = [...data].sort((a, b) => (BigInt(b.balance) > BigInt(a.balance) ? 1 : -1));
