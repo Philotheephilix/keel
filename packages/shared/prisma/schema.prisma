@@ -1,0 +1,110 @@
+// Keel Policy Ledger — MongoDB via Prisma.
+// Mirrors idea.md §2.2. The ledger is a DERIVED/CACHED view of on-chain
+// PredictManager state; chain state is always ground truth (§9.3).
+// Generated client output is gitignored.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/db/generated"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum PolicyStatus {
+  PENDING_CONFIRM
+  ACTIVE
+  EXPIRED_NO_CLAIM
+  SETTLING
+  PAID_OUT
+  FAILED
+}
+
+enum KeeperJobStatus {
+  WATCHING
+  TRIGGERED
+  PROCESSING
+  DONE
+  FAILED
+}
+
+enum LegType {
+  range
+  binary
+}
+
+type PolicyLeg {
+  legIndex     Int
+  type         LegType
+  oracleId     String
+  expiry       BigInt
+  lowerStrike  Float
+  higherStrike Float?
+  isUp         Boolean?
+  quantity     String // base units as string to avoid precision loss
+}
+
+model KeelUser {
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  userAddress      String    @unique
+  predictManagerId String?
+  createdAt        DateTime  @default(now())
+  lastSeenAt       DateTime  @updatedAt
+
+  policies   KeelPolicy[]
+  lpPosition KeelLpPosition?
+}
+
+model KeelPolicy {
+  id               String       @id @default(auto()) @map("_id") @db.ObjectId
+  policyId         String       @unique @default(uuid()) // the "policy" the UI shows
+  userAddress      String
+  predictManagerId String
+  underlyingAsset  String
+  oracleId         String
+  expiryTimestamp  BigInt
+  triggerPrice     Float // user-facing covered floor (snapped strike)
+  legs             PolicyLeg[]
+  sumInsured       Float // dUSDC, user-facing coverage amount
+  premiumPaid      Float // dUSDC, actual debited amount
+  status           PolicyStatus @default(PENDING_CONFIRM)
+  mintTxDigest     String?      @unique // one mint tx == one policy; enforces confirm idempotency
+  redeemTxDigest   String? // filled by keeper
+  payoutAmount     Float? // filled by keeper
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  user KeelUser @relation(fields: [userAddress], references: [userAddress])
+
+  @@index([userAddress])
+  @@index([oracleId, expiryTimestamp])
+  @@index([status])
+}
+
+model KeelLpPosition {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  userAddress     String   @unique
+  plpBalanceCached String  @default("0")
+  totalSupplied   Float    @default(0)
+  totalWithdrawn  Float    @default(0)
+  firstSupplyAt   DateTime?
+  updatedAt       DateTime @updatedAt
+
+  user KeelUser @relation(fields: [userAddress], references: [userAddress])
+}
+
+model KeelKeeperJob {
+  id               String          @id @default(auto()) @map("_id") @db.ObjectId
+  oracleId         String
+  expiryTimestamp  BigInt
+  status           KeeperJobStatus @default(WATCHING)
+  policiesToRedeem String[] // policyId list
+  lastCheckedAt    DateTime        @updatedAt
+  attempts         Int             @default(0)
+  createdAt        DateTime        @default(now())
+
+  @@unique([oracleId, expiryTimestamp])
+  @@index([status])
+}
