@@ -1,0 +1,24 @@
+{
+  "name": "keel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "On-chain parametric crash insurance for crypto, backed by your own holdings. Built on DeepBook Predict (Sui).",
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev:web": "pnpm --filter @keel/web dev",
+    "dev:keeper": "pnpm --filter @keel/keeper dev",
+    "build": "pnpm -r build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "db:generate": "pnpm --filter @keel/shared prisma:generate",
+    "db:push": "pnpm --filter @keel/shared prisma:push",
+    "sui:codegen": "pnpm --filter @keel/sui-bindings codegen"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.0"
+  }
+}
