@@ -118,23 +118,23 @@ export function useSignAndExecuteTransaction() {
 }
 
 const pill: CSSProperties = {
-  background: "var(--accent)",
-  color: "#06210f",
+  background: "var(--ink)",
+  color: "var(--bg-page)",
   padding: "8px 14px",
   borderRadius: 8,
-  fontWeight: 600,
+  fontWeight: 700,
   fontSize: 13,
-  border: "none",
+  border: "1.5px solid var(--ink)",
   cursor: "pointer",
   fontFamily: "ui-monospace, monospace",
 };
 const ghost: CSSProperties = {
   background: "transparent",
-  color: "var(--text)",
+  color: "var(--ink)",
   padding: "8px 10px",
   borderRadius: 8,
   fontSize: 13,
-  border: "1px solid var(--border)",
+  border: "1px solid var(--rule)",
   cursor: "pointer",
 };
 

@@ -28,7 +28,7 @@ export default function PolicyPage({ params }: { params: Promise<{ policyId: str
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, maxWidth: 760 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <Link href="/dashboard" style={{ color: "var(--muted)", fontSize: 13, textDecoration: "none" }}>
+        <Link href="/app" style={{ color: "var(--muted)", fontSize: 13, textDecoration: "none" }}>
           ← Dashboard
         </Link>
         <StatusBadge status={p.status} />

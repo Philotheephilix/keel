@@ -1,21 +1,20 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
-import { TopNav } from "@/components/TopNav";
 
 export const metadata: Metadata = {
-  title: "Keel — crash insurance for your crypto",
-  description: "On-chain parametric crash insurance, backed by your own holdings. Built on DeepBook Predict.",
+  title: "Keel — Crash insurance for your crypto, paid automatically",
+  description:
+    "Parametric on-chain crash insurance, backed by your own holdings. Built on DeepBook Predict (Sui). Non-custodial, no seed phrase, no claims.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Root provides only providers — the landing page (/) owns its own chrome,
+  // and the (app) route group wraps product pages in the NotebookShell.
   return (
     <html lang="en">
       <body>
-        <Providers>
-          <TopNav />
-          <main style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 20px 80px" }}>{children}</main>
-        </Providers>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

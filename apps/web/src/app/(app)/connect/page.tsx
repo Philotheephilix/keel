@@ -11,7 +11,7 @@ export default function ConnectPage() {
   const router = useRouter();
 
   useEffect(() => {
-    if (address) router.replace("/dashboard");
+    if (address) router.replace("/app");
   }, [address, router]);
 
   return (

@@ -130,8 +130,8 @@ function Steps({ step }: { step: number }) {
               borderRadius: 8,
               fontSize: 13,
               textAlign: "center",
-              background: active ? "var(--accent)" : "var(--panel)",
-              color: active ? "#06210f" : done ? "var(--accent)" : "var(--muted)",
+              background: active ? "var(--ink)" : "var(--panel)",
+              color: active ? "var(--bg-page)" : done ? "var(--accent)" : "var(--muted)",
               border: "1px solid var(--border)",
               fontWeight: 600,
             }}
