@@ -4,8 +4,11 @@
 // Generated client output is gitignored.
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../src/db/generated"
+  provider      = "prisma-client-js"
+  // Default output (node_modules/.prisma/client) so the client stays an external
+  // package on Vercel and its query engine is resolved beside it at runtime.
+  // "native" covers local dev; "rhel-openssl-3.0.x" is Vercel's serverless runtime.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {

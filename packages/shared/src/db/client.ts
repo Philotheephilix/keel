@@ -1,5 +1,5 @@
 /** Prisma (Mongo) singleton. Reused across hot-reloads in dev and by the keeper. */
-import { PrismaClient } from "./generated/index.js";
+import { PrismaClient } from "@prisma/client";
 
 const globalForPrisma = globalThis as unknown as { keelPrisma?: PrismaClient };
 
@@ -10,4 +10,4 @@ if (process.env.NODE_ENV !== "production") {
   globalForPrisma.keelPrisma = prisma;
 }
 
-export * from "./generated/index.js";
+export * from "@prisma/client";
